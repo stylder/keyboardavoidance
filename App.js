@@ -1,70 +1,56 @@
-import React, { Component } from 'react';
-import { View, TextInput,Text, ScrollView,Image,Button, Animated,TouchableOpacity, Keyboard, KeyboardAvoidingView,Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  ScrollView,
+  Animated,
+  TouchableOpacity,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+
+import AnimatedComponent from './AnimatedComponent';
 import styles, { IMAGE_HEIGHT, IMAGE_HEIGHT_SMALL } from './styles';
 import logo from './logo.png';
 
-class Demo extends Component {
-  constructor(props) {
-    super(props);
+export default function Demo(props) {
+  const [doAnimation, setDoAnimation] = useState(true);
 
-    this.imageHeight = new Animated.Value(IMAGE_HEIGHT);
-  }
+  useEffect(() => {
+    Keyboard.addListener("keyboardDidShow", keyboardDidShow);
+    Keyboard.addListener("keyboardDidHide", keyboardDidHide);
+    return () => {
+      Keyboard.removeListener("keyboardDidShow", keyboardDidShow);
+      Keyboard.removeListener("keyboardDidHide", keyboardDidHide);
+    };
+  }, []);
 
-  componentWillMount () {
-   if (Platform.OS=='ios'){
-    this.keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
-    this.keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
-   }else{
-    this.keyboardWillShowSub = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
-    this.keyboardWillHideSub = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
-   }
-
-  }
-
-  componentWillUnmount() {
-    this.keyboardWillShowSub.remove();
-    this.keyboardWillHideSub.remove();
-  }
-
-  keyboardWillShow = (event) => {
-    Animated.timing(this.imageHeight, {
-      duration: event.duration,
-      toValue: IMAGE_HEIGHT_SMALL,
-    }).start();
+  const keyboardDidShow = () => {
+    console.log("Keyboard Shown");
+    setDoAnimation(false);
   };
 
-  keyboardWillHide = (event) => {
-    Animated.timing(this.imageHeight, {
-      duration: event.duration,
-      toValue: IMAGE_HEIGHT,
-    }).start();
+  const keyboardDidHide = () => {
+    console.log("Keyboard Hidden");
+    setDoAnimation(true);
   };
 
 
-  keyboardDidShow = (event) => {
-    Animated.timing(this.imageHeight, {
-      toValue: IMAGE_HEIGHT_SMALL,
-    }).start();
-  };
 
-  keyboardDidHide = (event) => {
-    Animated.timing(this.imageHeight, {
-      toValue: IMAGE_HEIGHT,
-    }).start();
-  };
+  return (
+    <View style={{ flex: 1, backgroundColor: '#4c69a5', alignItems: 'center' }}>
 
-  render() {
-    return (
-      <View style={{flex:1,backgroundColor:'#4c69a5',alignItems:'center'}}>
-       
-       <Animated.Image source={logo} style={[styles.logo, { height: this.imageHeight }]} />
-       <ScrollView style={{flex:1}}>
-      
-         <KeyboardAvoidingView
-        style={styles.container}
-        behavior="padding"
-      >
-      <TextInput
+      <AnimatedComponent doAnimation={doAnimation} />
+      <ScrollView style={{ flex: 1 }}>
+
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior="padding"
+        >
+
+          <TextInput
             placeholder="Name"
             style={styles.input}
           />
@@ -87,16 +73,14 @@ class Demo extends Component {
             placeholder="Confirm Password"
             style={styles.input}
           />
-          
-      </KeyboardAvoidingView>
+
+        </KeyboardAvoidingView>
       </ScrollView>
       <View>
-      <TouchableOpacity style={styles.register}><Text>Done</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.register}><Text>Done</Text></TouchableOpacity>
       </View>
-      </View>
-    );
-  }
-};
+    </View>
+  );
+}
 
-export default Demo;
 
